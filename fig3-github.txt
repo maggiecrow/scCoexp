@@ -29,7 +29,7 @@ for (i in 1:length(levels(as.factor(pheno$Batch)))){
 		rank.coexp=rank.coexp[ord,ord]
 
 		#calculate assortativity
-		assort_mat[i,1]=assortativity(rank.coexp, pairwise=T)
+		assort_mat[i,1]=assortativity(rank.coexp)
 
 		#calculate the correlation between node degree and median expression
 		nd=apply(rank.coexp,1,function(x) median(x,na.rm=T))

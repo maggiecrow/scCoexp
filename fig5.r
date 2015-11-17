@@ -23,7 +23,7 @@ for (i in 1:dim(combinations)[2]){
 		rank.coexp[nas]=median(rank.coexp,na.rm=T)
 		temp2=neighbor.voting.CV(DE_genes,rank.coexp,3)
 		GBA_mat_naive[batch_ind1,batch_ind2]=temp2[1,1]
-		GBA_mat_robust[batch_ind1,batch_ind2]-temp2[2,1]
+		GBA_mat_robust[batch_ind1,batch_ind2]=temp2[2,1]
 	}
 
 #make networks for each batch and save ROCs

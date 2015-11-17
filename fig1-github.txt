@@ -1,12 +1,12 @@
 plot_figure1 <- function (data, pheno, file_base) {
 
 data=as.matrix(data)
-tpm=data*0
+cpm=data*0
 for(i in 1:dim(data)[2]){
-tpm[,i]=(data[,i]/colSums(data)[i])*10^6
+cpm[,i]=(data[,i]/colSums(data)[i])*10^6
 }
 
-pca=prcomp(t(log2(tpm+1)))
+pca=prcomp(t(log2(cpm+1)))
 z1 = matrix(0,ncol=3,nrow=8)
 
 for(i in 1:8){

@@ -1,82 +1,4 @@
-### Figure 5 ####
-
-batch_naive_DE <- function(data,pheno){
-
-data<-as.matrix(data)
-rank.dat=apply(data,2,function(x) rank(x,ties.method="random"))
-pval<-matrix(0,ncol=1,nrow=dim(data)[1])
-rownames(pval)=rownames(data)
-
-for (i in 1:dim(pval)[2]){
-	celltype_ind=which(pheno$Cell==j)
-	other_ind=which(pheno$Cell!=j)
-		for (j in 1:dim(data)[1]){
-			pval[j,i]=wilcox.test(rank.dat[j,celltype_ind],rank.dat[j,other_ind])$p.value
-		}
-	}
-
-qval=as.matrix(p.adjust(pval[,1],method="BH"))
-
-fc=matrix(0,ncol=length(levels(as.factor(pheno$Celltype))),nrow=dim(data)[1])
-for (j in 1:dim(fc)[2]){
-	celltype_ind=which(pheno$Cell==j)
-	other_ind=which(pheno$Cell!=j)
-	for (i in 1:dim(data)[1]){
-	fc[i,j]=mean(data[i,celltype_ind])/mean(data[i,other_ind])
-	}
-}
-
-DE_matrix=cbind(qval,fc[,1])
-DE_genes=rownames(data)[DE_mat[,1]<=0.05&DE_mat[,2]>=4]
-return(DE_genes)
-
-}
-
-
-batch_robust_DE <- function(data,pheno){
-
-# get helper functions 
-source(DEhelper.r)
-
-data<-as.matrix(data)
-pval<-matrix(0,ncol=4,nrow=dim(data)[1])
-rownames(pval)=rownames(data)
-  
-for (i in 1:dim(pval)[2]){
-    batch_ind1=which(pheno$Batch==i)
-    batch_ind2=which(pheno$Batch==i+4)
-    for (j in 1:dim(data)[1]){
-      pval[j,i]=wilcox.test(data[j,batch_ind1],data[j,batch_ind2])$p.value
-    }
-  }
-
-qvals=pval*0
-for(i in 1:dim(pval)[2]){
-qvals[,i]=p.adjust(pval[,i],method="BH")
-}
-
-pval.t<-thresholding(pval,qvals)
-meta.q<-metaP_pairwise(pval.t)
-fc<-fold_change(data,pheno)
-DE_matrix=cbind(meta.q,fc[,1])
-DE_genes=rownames(data)[DE_mat[,1]<=0.05&DE_mat[,2]>=4]
-return(DE_genes)
-}
-
-### run functions and make DE gene list for GBA
-
-DE_naive=batch_naive_DE(data,pheno)
-DE_robust=batch_robust_DE(data,pheno)
-DE_genes=matrix(0,ncol=2,nrow=dim(data)[1])
-rownames(DE_genes)=rownames(data)
-m<-match(rownames(DE_genes),DE_naive)
-DE_genes[!is.na(m),1]=1
-m<-match(rownames(DE_genes),DE_robust)
-DE_genes[!is.na(m),2]=1
-colnames(DE_genes)=c("Naive","Robust")
-
-#####
-
+### Figure 5C and 5D
 make_networks_and_plot_ROCs <- function(data, pheno, DE_genes, filename) {  
 load("run_GBA.Rdata")
 library(gplots)
@@ -142,10 +64,81 @@ dev.off()
 }
 
 
+######### HELPER FUNCTIONS -- batch_naive_DE, batch_robust_DE to get gene sets for network analysis; run_GBA can be found in fig4.r  ###########
 
+batch_naive_DE <- function(data,pheno){
 
+data<-as.matrix(data)
+rank.dat=apply(data,2,function(x) rank(x,ties.method="random"))
+pval<-matrix(0,ncol=1,nrow=dim(data)[1])
+rownames(pval)=rownames(data)
 
-######### DEhelper ###########
+for (i in 1:dim(pval)[2]){
+	celltype_ind=which(pheno$Cell==j)
+	other_ind=which(pheno$Cell!=j)
+		for (j in 1:dim(data)[1]){
+			pval[j,i]=wilcox.test(rank.dat[j,celltype_ind],rank.dat[j,other_ind])$p.value
+		}
+	}
+
+qval=as.matrix(p.adjust(pval[,1],method="BH"))
+
+fc=matrix(0,ncol=length(levels(as.factor(pheno$Celltype))),nrow=dim(data)[1])
+for (j in 1:dim(fc)[2]){
+	celltype_ind=which(pheno$Cell==j)
+	other_ind=which(pheno$Cell!=j)
+	for (i in 1:dim(data)[1]){
+	fc[i,j]=mean(data[i,celltype_ind])/mean(data[i,other_ind])
+	}
+}
+
+DE_matrix=cbind(qval,fc[,1])
+DE_genes=rownames(data)[DE_mat[,1]<=0.05&DE_mat[,2]>=4]
+return(DE_genes)
+
+}
+
+batch_robust_DE <- function(data,pheno){
+## requires fold_change, metap and thresholding functions (below)
+
+data<-as.matrix(data)
+pval<-matrix(0,ncol=4,nrow=dim(data)[1])
+rownames(pval)=rownames(data)
+  
+for (i in 1:dim(pval)[2]){
+    batch_ind1=which(pheno$Batch==i)
+    batch_ind2=which(pheno$Batch==i+4)
+    for (j in 1:dim(data)[1]){
+      pval[j,i]=wilcox.test(data[j,batch_ind1],data[j,batch_ind2])$p.value
+    }
+  }
+
+qvals=pval*0
+for(i in 1:dim(pval)[2]){
+qvals[,i]=p.adjust(pval[,i],method="BH")
+}
+
+pval.t<-thresholding(pval,qvals)
+meta.q<-metaP_pairwise(pval.t)
+fc<-fold_change(data,pheno)
+DE_matrix=cbind(meta.q,fc[,1])
+DE_genes=rownames(data)[DE_mat[,1]<=0.05&DE_mat[,2]>=4]
+return(DE_genes)
+}
+
+### run functions and make DE gene list for GBA
+
+DE_naive=batch_naive_DE(data,pheno)
+DE_robust=batch_robust_DE(data,pheno)
+DE_genes=matrix(0,ncol=2,nrow=dim(data)[1])
+rownames(DE_genes)=rownames(data)
+m<-match(rownames(DE_genes),DE_naive)
+DE_genes[!is.na(m),1]=1
+m<-match(rownames(DE_genes),DE_robust)
+DE_genes[!is.na(m),2]=1
+colnames(DE_genes)=c("Naive","Robust")
+
+############# DE HELPER FUNCTIONS ##############
 
 fold_change <- function (data,pheno) {
 fc=matrix(0,ncol=length(levels(as.factor(pheno$Celltype))),nrow=dim(data)[1])
@@ -158,7 +151,6 @@ for (j in 1:dim(fc)[2]){
 }
 return(fc)
 }
-
 
 thresholding <- function (pval, qval) {
   for(i in 1:dim(qval)[2]){
@@ -173,7 +165,6 @@ thresholding <- function (pval, qval) {
 
 
 ##meta-analysis code from the MADAM library on CRAN (deprecated; citation - Kugler KG, Mueller LA, Graber A. MADAM - An open source meta-analysis toolbox for R and Bioconductor. Source Code for Biology and Medicine. 2010;5:3. doi:10.1186/1751-0473-5-3.) 
-
 fisher.method <- function(pvals, method=c("fisher"), p.corr=c("bonferroni","BH","none"), zero.sub=0.00001, na.rm=FALSE, mc.cores=NULL){
   stopifnot(method %in% c("fisher"))
   stopifnot(p.corr %in% c("none","bonferroni","BH"))
@@ -202,7 +193,7 @@ fisher.method <- function(pvals, method=c("fisher"), p.corr=c("bonferroni","BH",
   return(fisher.sums)
 }
 
-
+### get meta-analytic BH adjusted p-values
 metaP_pairwise<-function(pvals) {
   metaP=matrix(0,ncol=1,nrow=dim(pvals)[1])
   rownames(metaP)=rownames(pvals)
@@ -224,8 +215,3 @@ metaP_pairwise<-function(pvals) {
   }
 return(qval)
 }
-
-  
-
-
-

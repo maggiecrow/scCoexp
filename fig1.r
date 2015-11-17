@@ -1,12 +1,12 @@
 plot_figure1 <- function (data, pheno, file_base) {
 
 data=as.matrix(data)
-tpm=data*0
+cpm=data*0
 for(i in 1:dim(data)[2]){
-tpm[,i]=(data[,i]/colSums(data)[i])*10^6
+cpm[,i]=(data[,i]/colSums(data)[i])*10^6
 }
 
-pca=prcomp(t(log2(tpm+1)))
+pca=prcomp(t(log2(cpm+1)))
 z1 = matrix(0,ncol=3,nrow=8)
 
 for(i in 1:8){
@@ -19,6 +19,7 @@ file1=paste(file_base,"1A.png",sep=".")
 file2=paste(file_base,"1B.png",sep=".")
 file3=paste(file_base,"1B_inset.png",sep=".")
 
+#PCA plot
 png(file=file1)
 plot(pca$x[,1],pca$x[,2], col=c(rep("blue",each=63),rep("red",each=63)), pch=20,ylab=paste("PC2 (",round((((pca$sdev^2/sum(pca$sdev^2))[2])*100),digits=2),"%)"),xlab=paste("PC1 (",round((((pca$sdev^2/sum(pca$sdev^2))[1])*100),digits=2),"%)"), xlim=c(-200,200),ylim=c(-150,150),axes=F) 
 
@@ -34,6 +35,7 @@ dev.off()
 
 library_complexity=apply(data,2,function(x) sum (x!=0))
 
+#plot library complexity vs PC1 loading 
 png(file=file2)
 plot(pca$x[,1],library_complexity, xlab="PC1 loading", ylab="Number of expressed genes",pch=20,axes=F)
 text(-150,2000, labels=paste("r = ", round(cor(pca$x[,1],library_complexity),2),sep=""))
@@ -41,6 +43,7 @@ axis(1)
 axis(2)
 dev.off()
 
+#plot library complexity by batch boxplot
 png(file=file3)
 boxplot(library_complexity~pheno$Batch, boxwex=0.5, whisklty=1, xlab="Batch", ylab="Number of expressed genes", axes=F)
 axis(1)

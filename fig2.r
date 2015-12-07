@@ -55,7 +55,7 @@ write.table(assort_mat,file=paste(file_ext,"assortativity.txt",sep="."),sep="\t"
 assortativity <- function(network){
 
        diag(network) = 0
-       node_degree=rowSums(network)}
+       node_degree=rowSums(network)
         
 	# Weighted network
         	indices = which(!is.na(network), arr.ind=T )

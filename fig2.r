@@ -23,9 +23,6 @@ for (i in 1:length(levels(as.factor(pheno$Batch)))){
 		rank.coexp=coexp
 		rank.coexp[]=rank(coexp,ties.method="average",na.last="keep")
 		rank.coexp=rank.coexp/length(which(!is.na(rank.coexp)))
-		
-		#order the network by the number of zeros each gene takes
-		rank.coexp=rank.coexp[ord,ord]
 
 		#calculate assortativity
 		assort_mat[i,1]=assortativity(rank.coexp)
@@ -34,6 +31,9 @@ for (i in 1:length(levels(as.factor(pheno$Batch)))){
 		nd=rowSums(rank.coexp)
     		med_exp=apply(temp[,which(pheno$Batch==i)],1,function(x) median(x))
 		nd_exp[i,1]=cor(nd,med_exp,method="spearman")
+		
+		#order the network by the number of zeros each gene takes
+		rank.coexp=rank.coexp[ord,ord]
 		
 		#sunset plot
 		file_plot=paste(file_ext,i,"sunset.png",sep=".")

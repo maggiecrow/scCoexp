@@ -66,7 +66,8 @@ for (i in 1:length(levels(as.factor(pheno$Batch)))) {
 	rownames(medians)=rownames(temp)
 
 	#run n-fold neighbor voting
-	rocs=neighbor.voting.CV.nfold(geneset,rank.coexp,sum(geneset))
+	rocs=neighbor.voting.CV.nfold(as.matrix(geneset[,1]),rank.coexp,sum(geneset))
+	rocs=as.matrix(rocs)
 	rownames(rocs)=rownames(geneset)[which(geneset==1)]
 
 	#create a table with genes as rows and medians and rocs as columns

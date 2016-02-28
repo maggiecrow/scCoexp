@@ -1,0 +1,91 @@
+From a wigclust node
+
+mkdir /mnt/wigstore2/data/illuminaGA/data/AD2HL8ACXX
+
+
+From a bnbdev node
+
+rsync -av --progress Project_Huang/ /sonas-hs/wigler/nlsas/data/data/illuminaGA/data/AD2HL8ACXX
+
+
+From wigclust node
+
+mkdir /mnt/wigclust5/data/safe/kendall/anirban05/barcode.split/AD2HL8ACXX
+
+
+#  Make bash scripts to split reads by sample tag  example /mnt/wigclust5/data/safe/kendall/anirban05/barcode.split.AD2HL8ACXX.2.bash
+
+#  Run bash scripts to split reads by sample tag
+
+#  Update guide table with sample info  /mnt/wigclust5/data/safe/kendall/anirban05/mm9/meta/anirban05.guide.txt
+#  Put 1s in the first column for the samples you want to process
+
+
+cd /mnt/wigclust5/data/safe/kendall/anirban05/mm9/programs
+
+python process.rna01.py   ##  This program creates scripts to run tophat and submits them to wigclust
+
+# Wait until mapping done
+#  qstat to list your jobs
+#  status -acl to list counts of everyone's jobs running
+
+python add.varietal.tag03.py  ##  This program submits wigclust jobs to add the varietal tag information for all the reads in the .bam file from the previous step.
+
+#  Wait until all jobs done, then cut and paste the following two commands from /mnt/wigclust5/data/safe/kendall/anirban05/mm9/programs/aggregate.varietal.tag.counts03.strand.py
+
+TAB=`echo -e "\t"`
+
+python aggregate.varietal.tag.counts03.strand.py <(cat <(head -n 1 ../meta/anirban05.guide.txt) <(sort -t"$TAB" -k 3,3 -k 16,16 -k 10,10 -k 11,11 <(tail -n +2 ../meta/anirban05.guide.txt)))
+
+
+###  These three commands count tags per gene and combine tags within 1 base of each other.
+
+
+###  These next three commands process all the CAP????... files
+
+for file in CAP*.r2.mm9.refFlat.20120902.counts.04.stdout ; do (cat $file | python /data/safe/kendall/zhu04/unique.genes01.py | sort -k 1,1 -k 3,3rn -k 2,2 > $file.unique; ) ; done ;
+
+for file in CAP*.r2.mm9.refFlat.20120902.counts.04.stdout.unique ; do (cat $file | python /data/safe/kendall/pythonpgms/reassign.tags.dist1.py $file | sort -k 2,2 -k 4,4rn -k 3,3 > $file.dist1 ; ) ; done ;
+
+for file in CAP*.r2.mm9.refFlat.20120902.counts.04.stdout.unique.dist1 ; do (cat $file | python /data/safe/kendall/pythonpgms/aggregate.tag.by.gene02.py > $file.summary ; ) ; done ;
+
+###  These next three commands process the CAP????... files in a number range
+
+for i in {111..174} ; do ( jkfile=CAP0$i.r2.mm9.refFlat.20120902.counts.04.stdout; cat $jkfile | python /data/safe/kendall/zhu04/unique.genes01.py | sort -k 1,1 -k 3,3rn -k 2,2 > $jkfile.unique; ) ; done ;
+
+for i in {111..174} ; do ( jkfile=CAP0$i.r2.mm9.refFlat.20120902.counts.04.stdout.unique; cat $jkfile | python /data/safe/kendall/pythonpgms/reassign.tags.dist1.py $jkfile | sort -k 2,2 -k 4,4rn -k 3,3 > $jkfile.dist1 ; ) ; done ;
+
+for i in {943..1006} ; do ( jkfile=CAP0$i.r2.mm9.refFlat.20120902.counts.04.stdout.unique.dist1; cat $jkfile | python /data/safe/kendall/pythonpgms/aggregate.tag.by.gene02.py > $jkfile.summary ; ) ; done ;
+
+
+
+
+###  These two commands get counts for the ERCC sequences
+
+###  ALL
+for file in CAP*.r2.*.bam ; do (/data/safe/kendall/samtools-0.1.16/samtools view $file | grep ERCC | python /data/safe/kendall/pythonpgms/ercc92.varietal.tag.count05.py $file.ercc.tag.count.txt > $file.ercc.tag.list.txt; ) ; done ;
+
+for file in CAP*.r2.*.bam.ercc.tag.list.txt ; do ( cat $file | python /data/safe/kendall/pythonpgms/ercc92.dist12.py > $file.tag12.txt ; ) ; done ;
+
+###  SAME BY NUMBER
+for i in {111..174} ; do ( jkfile=CAP0$i.r2.sorted.bam; /data/safe/kendall/samtools-0.1.16/samtools view $jkfile | grep ERCC | python /data/safe/kendall/pythonpgms/ercc92.varietal.tag.count05.py $jkfile.ercc.tag.count.txt > $jkfile.ercc.tag.list.txt; ) ; done ;
+
+for i in {111..174} ; do ( jkfile=CAP0$i.r2.sorted.bam.ercc.tag.list.txt; cat $jkfile | python /data/safe/kendall/pythonpgms/ercc92.dist12.py > $jkfile.tag12.txt ; ) ; done ;
+
+
+###  Count reads and tags for each cell
+
+echo "" > reads.tags.report.20140222.txt
+
+for file in CAP*.r2.mm9.refFlat.20120902.counts.04.stdout.unique.dist1 ; do ( echo $file >> reads.tags.report.anirban13.20150522.txt ; cat $file | awk 'BEGIN { reads = 0; tags = 0; } { tags += 1; reads += $4; } END { print reads, tags ; }'  >> reads.tags.report.anirban13.20150522.txt ; ) ; done ;
+
+
+
+
+###  These two commands estimate the total number of tagged rna molecules in all the cells
+
+echo "" > total.tag.mols.txt
+
+for file in CAP*.r2.mm9.refFlat.20120902.counts.04.stdout.unique.dist1 ; do (cat $file | awk 'BEGIN {b1 = 0; b2 = 0; N = 0; } {  N += 1; if ($4 == 1) b1 += 1; if ($4 == 2) b2 += 1; } END { L = 1; if (b1 > 0) { L = (2 * b2) / b1; } ; print N, b1, b2, int(b1 / (L * exp(-L))); }'  >> total.tag.mols.txt ; ) ; done ;
+
+

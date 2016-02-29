@@ -9,7 +9,7 @@ Co-expression networks have been a useful tool for functional genomics, providin
 ####This site contains scripts to reproduce analyses in this manuscript
 * Sample information for scRNA-seq and bulk meta-analysis can be found in scmeta.samples.txt and bulkmeta.samples.txt
 * Code to process raw scRNA-seq data is available here along with an example workflow (instructions.txt) and sample metadata file (sample.guide.txt)
-* Expression data and metadata available to download from GEO (email mcrow@cshl.edu to request access) 
+* Expression data and metadata available to download from GEO (email mcrow@cshl.edu to request access) and the number of total reads and UMIs for each sample can be found in readstats.csv
 * BrainSpan RNA-seq data was downloaded from the BrainSpan Consortium (http://www.brainspan.org/api/v2/well_known_file_download/267666525, access date July 2015)
 * Neighbor voting was performed using run_GBA.Rdata, and code was provided by Sara Ballouz. The generic GO slim was downloaded from the Gene Ontology Consortium and filtered for mammalian functions (http://geneontology.org/page/go-slim-and-subset-guide, access date August 2015) and the synaptic geneset was downloaded from the Genes to Cognition database (https://www.genes2cognition.org/db/GeneList/L00000001, access date February 2015)
 * All other analyses were performed using R base functions as described in the paper (e.g. correlation, ranking, matrix aggregation, node degree calculations, rank sum test, Kolmogorov Smirnov test, Jaccard index). For any assistance reproducing analyses please contact mcrow@cshl.edu or jgillis@cshl.edu

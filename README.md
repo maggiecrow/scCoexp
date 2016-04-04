@@ -7,7 +7,7 @@ Co-expression networks have been a useful tool for functional genomics, providin
 
 
 ####This site contains scripts to reproduce analyses in this manuscript
-* Sample information for scRNA-seq and bulk meta-analysis can be found in scmeta.samples.txt and bulkmeta.samples.txt
+* Sample information for scRNA-seq and bulk meta-analysis can be found in scmeta.samples.txt and bulkmeta.samples.txt. Networks are available to download [here](https://www.dropbox.com/sh/msn7c1nxo6equb7/AADk1xQStDm7N1FUtlvcoDMpa?dl=0).
 * Code to process raw scRNA-seq data is available here along with an example workflow (instructions.txt) and sample metadata file (sample.guide.txt)
 * Expression data and metadata available to download from GEO (email mcrow@cshl.edu to request access) and the number of total reads and UMIs for each sample can be found in readstats.csv
 * BrainSpan RNA-seq data was downloaded from the BrainSpan Consortium (http://www.brainspan.org/api/v2/well_known_file_download/267666525, access date July 2015)
